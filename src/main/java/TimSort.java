@@ -29,17 +29,16 @@ public class TimSort<T> implements Sorting<T> {
                     if (isMore) {
                         iterations += reverse(array, start, p - 1);
                     }
-                    iterations += insertSort(array, start, end, c);
+                    iterations += insertSort(array, p, start, end, c);
                     runs.add(new Run(start, Math.min(minRun, array.length - start)));
                     p = end + 1;
-                    iterations += tryMerge(array, runs, c);
                 } else {
                     if (isMore) {
                         iterations += reverse(array, start, p - 1);
                     }
                     runs.add(new Run(p - run, run));
-                    iterations += tryMerge(array, runs, c);
                 }
+                iterations += tryMerge(array, runs, c);
                 if (p + 1 < array.length) {
                     isMore = c.compare(array[p], array[p + 1]) > 0;
                 }
@@ -54,7 +53,7 @@ public class TimSort<T> implements Sorting<T> {
         }
         if (last.start + last.size < array.length) {
             int start = last.start + last.size;
-            insertSort(array, start, array.length - 1, c);
+            insertSort(array, start, start, array.length - 1, c);
             runs.add(new Run(start, array.length - start));
         }
         while (runs.size() > 1) {
@@ -74,7 +73,6 @@ public class TimSort<T> implements Sorting<T> {
     private int tryMerge(T[] array, Deque<Run> runs, Comparator<? super T> c) {
         int iterations = 0;
         while (runs.size() >= 3) {
-            //System.out.println("0=" + runs);
             Run z = runs.pollLast();
             Run y = runs.pollLast();
             Run x = runs.pollLast();
@@ -84,19 +82,14 @@ public class TimSort<T> implements Sorting<T> {
                 runs.add(z);
                 break;
             }
-            //System.out.println("X=" + x + ",Y=" + y + ",Z=" + z);
 
             if (x.size <= z.size || x.size <= y.size) {
-                //System.out.println("X+Y,Z");
                 iterations += mergeRuns(array, runs, x, y, c);
                 runs.add(z);
             } else {
-                //System.out.println("X,Y+Z");
                 runs.add(x);
                 iterations += mergeRuns(array, runs, y, z, c);
             }
-            //System.out.println("1=" + runs);
-            //System.out.println();
         }
         return iterations;
     }
@@ -139,9 +132,9 @@ public class TimSort<T> implements Sorting<T> {
         return n + r;
     }
 
-    public int insertSort(T[] arr, int start, int end, Comparator<? super T> c) {
+    public int insertSort(T[] arr, int notSortedStart, int start, int end, Comparator<? super T> c) {
         int iterations = 0;
-        for (int i = start; i <= end; i++) {
+        for (int i = notSortedStart; i <= end; i++) {
             int j = i;
             while (j > start && c.compare(arr[j], arr[j - 1]) < 0) {
                 T temp = arr[j];
