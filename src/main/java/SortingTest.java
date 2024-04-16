@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class SortingTest {
     static final int ARRAY_SIZE = 10;
@@ -44,6 +45,11 @@ public class SortingTest {
     }
 
     static void readFiles(Consumer<Integer[]> consumer) {
+        try {
+            System.setOut(new PrintStream("out.txt"));
+        } catch (FileNotFoundException e) {
+            System.out.println("Can't set out");
+        }
         var files = new File("res").listFiles();
         assert files != null;
         for (File file : files) {
@@ -61,22 +67,98 @@ public class SortingTest {
     private static void assertArraySorted(Integer[] array, Integer[] original) {
         List<Integer> arrayList = Arrays.asList(array);
         List<Integer> originalList = Arrays.asList(original);
-        assert arrayList.containsAll(originalList);
-        assert originalList.containsAll(arrayList);
+        check(arrayList.containsAll(originalList), () -> {});
+        check(originalList.containsAll(arrayList), () -> {});
         for (int i = 1; i < array.length; i++) {
-            assert array[i - 1] <= array[i];
+            int finalI = i;
+            check(array[i - 1] <= array[i], () -> System.out.println(finalI));
+        }
+    }
+
+    private static void check(boolean c, Runnable b) {
+        if (!c) {
+            b.run();
+            throw new AssertionError();
         }
     }
 
     static void random(Consumer<Integer[]> consumer) {
         Integer[] arr = {
-                10, 9, 8, 7, 6, 5, 4, 3, 2, 1
+                6547,
+                8977,
+                5173,
+                742,
+                6926,
+                3478,
+                7440,
+                8836,
+                6661,
+                1402,
+                5019,
+                8274,
+                7045,
+                6654,
+                1681,
+                5561,
+                1073,
+                7259,
+                4914,
+                724,
+                8778,
+                8192,
+                6447,
+                3157,
+                5433,
+                5396,
+                4756,
+                3942,
+                6275,
+                85,
+                7372,
+                9478,
+                9465,
+                9334,
+                4590,
+                5176,
+                1057,
+                2328,
+                9056,
+                3377,
+                1898,
+                1638,
+                7602,
+                6692,
+                6583,
+                5402,
+                2729,
+                6492,
+                8860,
+                9412,
+                1152,
+                6419,
+                6215,
+                7733,
+                5944,
+                2489,
+                8736,
+                6736,
+                6990,
+                4577,
+                3850,
+                183,
+                1707,
+                8933,
+                9004,
+                2360,
+                4262,
+                7714,
+                8964,
+                2160,
         };
         consumer.accept(arr);
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
-        System.setOut(new PrintStream("out.txt"));
+    public static void main(String[] args) {
         readFiles(array -> {
             if (PRINT_ARRAY) {
                 printArray(array);
@@ -87,11 +169,11 @@ public class SortingTest {
             long startTime = System.nanoTime();
             int iterations = sorting.sort(array, Integer::compare);
             long endTime = System.nanoTime();
-            assertArraySorted(array, original);
-            System.out.println(iterations);
             if (PRINT_ARRAY) {
                 printArray(array);
             }
+            assertArraySorted(array, original);
+            System.out.println(iterations);
 
             //System.out.println((endTime - startTime) / 1000);
         });
