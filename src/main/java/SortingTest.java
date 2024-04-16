@@ -175,7 +175,7 @@ public class SortingTest {
             assertArraySorted(array, original);
             System.out.println(iterations);
 
-            //System.out.println((endTime - startTime) / 1000);
+            //System.out.println((endTime - startTime) / 1000000);
         });
 
     }

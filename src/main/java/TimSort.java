@@ -32,13 +32,13 @@ public class TimSort<T> implements Sorting<T> {
                     iterations += insertSort(array, start, end, c);
                     runs.add(new Run(start, Math.min(minRun, array.length - start)));
                     p = end + 1;
-                    tryMerge(array, runs, c);
+                    iterations += tryMerge(array, runs, c);
                 } else {
                     if (isMore) {
                         iterations += reverse(array, start, p - 1);
                     }
                     runs.add(new Run(p - run, run));
-                    tryMerge(array, runs, c);
+                    iterations += tryMerge(array, runs, c);
                 }
                 if (p + 1 < array.length) {
                     isMore = c.compare(array[p], array[p + 1]) > 0;
@@ -63,7 +63,7 @@ public class TimSort<T> implements Sorting<T> {
             if (y.start < z.start) {
                 iterations += merge(array, y.start, z.start - 1, z.start + z.size - 1, c);
                 runs.add(new Run(y.start, y.size + z.size));
-            } else  {
+            } else {
                 iterations += merge(array, z.start, y.start - 1, y.start + y.size - 1, c);
                 runs.add(new Run(z.start, y.size + z.size));
             }
@@ -72,34 +72,47 @@ public class TimSort<T> implements Sorting<T> {
     }
 
     private int tryMerge(T[] array, Deque<Run> runs, Comparator<? super T> c) {
-        if (runs.size() < 3) return 0;
         int iterations = 0;
-        Run z = runs.pollLast();
-        Run y = runs.pollLast();
-        Run x = runs.pollLast();
-        if (x.size > y.size + z.size && y.size > z.size) {
-            runs.add(x);
-            runs.add(y);
-            runs.add(z);
-            return 0;
-        } else if (x.size < z.size) {
-            if (x.start < y.start) {
-                iterations += merge(array, x.start, y.start - 1, y.start + y.size - 1, c);
-            } else {
-                iterations += merge(array, y.start, x.start - 1, x.start + x.size - 1, c);
+        while (runs.size() >= 3) {
+            //System.out.println("0=" + runs);
+            Run z = runs.pollLast();
+            Run y = runs.pollLast();
+            Run x = runs.pollLast();
+            if (x.size > y.size + z.size && y.size > z.size) {
+                runs.add(x);
+                runs.add(y);
+                runs.add(z);
+                break;
             }
-            runs.add(new Run(x.start, x.size + y.size));
-            runs.add(z);
-        } else {
-            if (y.start < z.start) {
-                iterations += merge(array, y.start, z.start - 1, z.start + z.size - 1, c);
+            //System.out.println("X=" + x + ",Y=" + y + ",Z=" + z);
+
+            if (x.size <= z.size || x.size <= y.size) {
+                //System.out.println("X+Y,Z");
+                iterations += mergeRuns(array, runs, x, y, c);
+                runs.add(z);
             } else {
-                iterations += merge(array, z.start, y.start - 1, y.start + y.size - 1, c);
+                //System.out.println("X,Y+Z");
+                runs.add(x);
+                iterations += mergeRuns(array, runs, y, z, c);
             }
-            runs.add(x);
-            runs.add(new Run(y.start, y.size + z.size));
+            //System.out.println("1=" + runs);
+            //System.out.println();
         }
         return iterations;
+    }
+
+    private int mergeRuns(T[] array, Deque<Run> runs, Run x, Run y, Comparator<? super T> c) {
+        Run start;
+        Run end;
+        if (x.start < y.start) {
+            start = x;
+            end = y;
+        } else {
+            start = y;
+            end = x;
+        }
+        runs.add(new Run(start.start, x.size + y.size));
+        return merge(array, start.start, end.start - 1, end.start + end.size - 1, c);
     }
 
     private <T1> int reverse(T1[] target, int start, int end) {
